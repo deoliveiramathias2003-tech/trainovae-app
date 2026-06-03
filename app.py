@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jun  3 21:03:12 2026
-
-@author: deoliveira_mathias
-"""
-
 import streamlit as st
 import requests
 from google import genai
@@ -19,15 +11,14 @@ st.markdown("Connecte ton compte Strava et obtiens un plan d'entraînement sur-m
 # --- 2. BARRE LATÉRALE (Inputs utilisateur) ---
 st.sidebar.header("⚙️ Configuration")
 strava_token = st.sidebar.text_input("Jeton Strava (Access Token)", type="password")
-gemini_key = st.sidebar.text_input("Clé API Google Gemini", type="password")
+# ❌ On a supprimé la demande de clé Gemini ici !
 objectif = st.sidebar.text_area("Ton objectif sportif", "Préparer un 10 km en moins de 40 minutes")
 
 # --- 3. BOUTON D'ACTION ---
 if st.button("🚀 Analyser mon entraînement", type="primary"):
     
-    # Vérification que l'utilisateur a bien rempli ses clés
-    if not strava_token or not gemini_key:
-        st.error("⚠️ Oups ! Il manque ton jeton Strava ou ta clé Gemini dans la barre latérale.")
+    if not strava_token:
+        st.error("⚠️ Il manque ton jeton Strava dans la barre latérale.")
     else:
         with st.spinner("📡 Connexion à Strava en cours..."):
             
@@ -42,15 +33,12 @@ if st.button("🚀 Analyser mon entraînement", type="primary"):
                 charge_totale_min = 0
                 
                 for act in activites:
-                    nom = act.get('name', 'Inconnu')
                     distance = act.get('distance', 0) / 1000
                     temps_min = act.get('moving_time', 0) / 60
-                    
                     charge_totale_km += distance
                     charge_totale_min += temps_min
                     
                     fc_moyenne = act.get('average_heartrate', 'Non mesurée')
-                    
                     allure_str = ""
                     if distance > 0:
                         allure_dec = temps_min / distance
@@ -62,15 +50,16 @@ if st.button("🚀 Analyser mon entraînement", type="primary"):
                 
                 st.success("✅ Données Strava récupérées avec succès !")
                 
-                # Affichage de belles jauges pour les statistiques
                 st.subheader("📊 Ton volume récent (5 dernières séances)")
                 col1, col2 = st.columns(2)
                 col1.metric("Distance Cumulée", f"{charge_totale_km:.1f} km")
                 col2.metric("Temps d'effort", f"{charge_totale_min:.0f} min")
 
-                # --- 5. ANALYSE IA ---
+                # --- 5. ANALYSE IA SÉCURISÉE ---
                 with st.spinner("🧠 Ton coach IA étudie ton dossier..."):
-                    client = genai.Client(api_key=gemini_key)
+                    # ✨ LA MAGIE EST ICI : Le code va chercher ta clé dans le coffre-fort Streamlit
+                    cle_secrete = st.secrets["GEMINI_API_KEY"]
+                    client = genai.Client(api_key=cle_secrete)
                     
                     prompt_coach = f"""Tu es un Head Coach sportif expert en périodisation.
                     Objectif de l'athlète : "{objectif}".
