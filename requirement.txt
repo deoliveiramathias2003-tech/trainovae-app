@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun  3 21:17:29 2026
+
+@author: deoliveira_mathias
+"""
+
+streamlit
+requests
+google-genai
